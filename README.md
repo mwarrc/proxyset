@@ -1,65 +1,114 @@
+Here's a stunning README template for your **Proxyset** CLI tool based on the script provided:
 
 ---
 
-# Proxy Configuration Script
+# Proxyset 🛡️
 
-This script simplifies proxy setup and management on Linux systems. It can configure proxies for various tools and applications, including system-wide settings, and provides rollback functionality.
+**Proxyset** is a powerful CLI tool designed to simplify managing proxy settings on Linux. Effortlessly configure, rollback, or monitor proxy configurations system-wide and for popular applications like Git, Pacman, and more.
 
-## Features
+---
 
-- Set up proxies for:
-  - Environment variables
-  - `pacman`, `wget`, `curl`, `git`, `npm`, `yarn`, and Flatpak
-  - GNOME proxy settings
-  - Transparent proxy with iptables
-- Rollback all proxy settings
-- Transparent proxy service using a custom Python script
+## ✨ Features
+- **Proxy Management**: Set and manage system-wide and application-specific proxy settings.
+- **Rollback Capability**: Easily remove all proxy configurations and restore defaults.
+- **Status Check**: Display the current proxy setup for quick diagnostics.
+- **Cross-Application Support**: Works with Git, NPM, Yarn, Pacman, and more.
+- **Silent & Transparent Operations**: Configure silent mode and set up a transparent proxy.
 
-## Prerequisites
+---
 
-- Ensure `sudo` is configured for your user.
-- Required tools: `iptables`, `curl`, and optional tools like `git`, `npm`, `yarn`, and Flatpak if applicable.
-- Python installed for the transparent proxy feature.
+## 🚀 Getting Started
 
-## Usage
+### Prerequisites
+- Bash (version 4.0 or higher)
+- `sudo` privileges
+- Installed applications (optional):
+  - Git, Flatpak, NPM, Yarn
 
-### Setting Up a Proxy
-1. Run the script with the `set` option:
-   ```bash
-   ./proxyset.sh set
-   ```
-2. Follow the prompts:
-   - Enter the proxy server and port.
-   - Provide authentication details if required.
-
-3. The script will:
-   - Backup important files.
-   - Configure proxies for supported tools and services.
-   - Create a transparent proxy service if needed.
-
-### Rolling Back Proxy Settings
-To remove all proxy configurations:
+### Installation
+Clone the repository and make the script executable:
 ```bash
-./proxyset.sh rollback
+git clone https://github.com/your-username/proxyset.git
+cd proxyset
+chmod +x proxyset.sh
 ```
 
-### Example Commands
-- Set up a proxy:
+---
+
+## 🛠️ Usage
+
+### Command Syntax
+```bash
+proxyset [command] [options]
+```
+
+### Commands
+- **`set`**: Configure and enable proxy settings.
+- **`rollback`**: Remove all proxy settings.
+- **`status`**: Show the current proxy configuration.
+
+### Options
+| Option        | Description                      |
+|---------------|----------------------------------|
+| `-h, --help`  | Show the help message.          |
+| `-v, --version` | Display the version number.     |
+| `-s, --silent` | Run in silent mode.             |
+| `--no-reboot` | Skip reboot prompt after setting.|
+
+---
+
+## 🖥️ Examples
+
+- Set up a proxy with no reboot:
   ```bash
-  ./proxyset.sh set
+  proxyset set --no-reboot
   ```
-- Roll back proxy settings:
+- Rollback all proxy settings:
   ```bash
-  ./proxyset.sh rollback
+  proxyset rollback
+  ```
+- Display the current proxy configuration:
+  ```bash
+  proxyset status
   ```
 
-## Notes
+---
 
-- For transparent proxy service persistence, install `iptables-persistent`.
-- Reboot may be required after setup for changes to take effect.
+## 📂 Configuration Details
+Proxyset modifies configurations for:
+- **Environment Variables**: `/etc/environment`
+- **Pacman**: `/etc/pacman.conf`
+- **Git**: Global proxy settings
+- **NPM/Yarn**: Proxy management
+- **System Proxies**: GNOME and other supported environments
 
-## Contributions
-Feel free to contribute by creating pull requests or reporting issues.
+Backup files are automatically created during setup.
 
-:)
-----
+---
+
+## 🧑‍💻 Contributing
+Contributions are welcome! Feel free to:
+1. Fork the repository.
+2. Create a new branch for your feature/bug fix.
+3. Submit a pull request.
+
+---
+
+## 📜 License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🎯 Roadmap
+- [ ] Add support for more applications.
+- [ ] Enhance transparent proxy functionality.
+- [ ] Create a GUI wrapper.
+
+---
+
+## 🤝 Acknowledgments
+Thanks to the open-source community for inspiring this project!
+
+---
+
+Let me know if you'd like me to tweak or add anything!
