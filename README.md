@@ -28,7 +28,7 @@ Here's a stunning README template for your **Proxyset** CLI tool based on the sc
 ### Installation
 Clone the repository and make the script executable:
 ```bash
-git clone https://github.com/your-username/proxyset.git
+git clone https://github.com/mwarrc/proxyset.git
 cd proxyset
 chmod +x proxyset.sh
 ```
