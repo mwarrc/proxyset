@@ -94,11 +94,6 @@ Contributions are welcome! Feel free to:
 
 ---
 
-## 📜 License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
 ## 🎯 Roadmap
 - [ ] Add support for more applications.
 - [ ] Enhance transparent proxy functionality.
@@ -106,8 +101,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 🤝 Acknowledgments
-Thanks to the open-source community for inspiring this project!
 
 ---
 
