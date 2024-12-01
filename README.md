@@ -61,5 +61,5 @@ To remove all proxy configurations:
 ## Contributions
 Feel free to contribute by creating pull requests or reporting issues.
 
-## License
+:)
 ----
