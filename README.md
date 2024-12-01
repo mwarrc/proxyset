@@ -1,5 +1,3 @@
-Here's a stunning README template for your **Proxyset** CLI tool based on the script provided:
-
 ---
 
 # Proxyset 🛡️
