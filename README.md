@@ -34,7 +34,7 @@ chmod +x proxyset.sh
 ### Installing as a Terminal App [optional]
 1.Clone the repository
 ```bash
-git clone https://github.com/yourusername/proxyset.git
+git clone https://github.com/mwarrc/proxyset.git
 cd proxyset
 ```
 2.Create a symbolic link and make it executable:
