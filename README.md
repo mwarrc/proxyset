@@ -107,5 +107,3 @@ Contributions are welcome! Feel free to:
 
 
 ---
-
-Let me know if you'd like me to tweak or add anything!
