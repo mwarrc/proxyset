@@ -2,33 +2,40 @@
 # ProxySet Core - Updater Module
 
 module_updater_run() {
+    local target_version="${1:-}" # Optional: tag, branch, or commit
+    local use_proxy="${2:-1}"    # Default: use current proxy settings
+    
     log "INFO" "Initializing update sequence..."
+
+    # If proxy bypass is requested, clear environment for the update process
+    if [[ "$use_proxy" -eq 0 ]]; then
+        log "INFO" "Bypassing proxy for update process..."
+        unset http_proxy https_proxy all_proxy no_proxy
+        unset HTTP_PROXY HTTPS_PROXY ALL_PROXY NO_PROXY
+    fi
     
     # 1. Determine installation mode
-    # Check if we are inside a git work tree
     if git -C "$SCRIPT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
         local repo_root
         repo_root=$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)
-        local branch
-        branch=$(git -C "$repo_root" rev-parse --abbrev-ref HEAD)
         
-        log "PROGRESS" "Git installation detected [Branch: $branch]"
+        # If no version specified, use current branch
+        local branch
+        if [[ -z "$target_version" ]]; then
+            branch=$(git -C "$repo_root" rev-parse --abbrev-ref HEAD)
+        else
+            branch="$target_version"
+        fi
+        
+        log "PROGRESS" "Git installation detected [Target: $branch]"
         log "PROGRESS" "Synchronizing with origin..."
         
-        if git -C "$repo_root" fetch origin "$branch" >/dev/null 2>&1; then
-            local loc rem
-            loc=$(git -C "$repo_root" rev-parse HEAD)
-            rem=$(git -C "$repo_root" rev-parse "origin/$branch")
-            
-            if [[ "$loc" == "$rem" ]]; then
-                log "SUCCESS" "System is already at the latest revision."
+        if git -C "$repo_root" fetch origin >/dev/null 2>&1; then
+            log "INFO" "Resetting codebase to origin/$branch..."
+            if git -C "$repo_root" checkout "$branch" && git -C "$repo_root" reset --hard "origin/$branch"; then
+                log "SUCCESS" "Update complete. Codebase synchronized to $branch."
             else
-                log "WARN" "New revision found. Converging code..."
-                if git -C "$repo_root" pull origin "$branch"; then
-                    log "SUCCESS" "Update complete. Codebase synchronized."
-                else
-                    die "Failed to pull remote changes. Check your network or local modifications."
-                fi
+                die "Failed to switch to or sync with $branch. Verify the version/branch exists."
             fi
         else
             die "Failed to reach remote repository. Verify internet connectivity."
@@ -44,12 +51,14 @@ module_updater_run() {
     fi
 
     # Determine branch from version (defaulting to testing for Alpha 3.0)
-    local update_url="https://raw.githubusercontent.com/mwarrc/proxyset/testing/auto-install.sh"
+    local target_branch="${target_version:-testing}"
+    local update_url="https://raw.githubusercontent.com/mwarrc/proxyset/${target_branch}/auto-install.sh"
     
-    log "PROGRESS" "Fetching remote distribution from: $update_url"
+    log "PROGRESS" "Fetching remote distribution from branch '$target_branch'..."
     if curl -sS "$update_url" | bash; then
          log "SUCCESS" "Global update finalized. All modules synchronized."
     else
-         die "Critical: Global re-installation failed."
+         die "Critical: Global re-installation failed for branch '$target_branch'."
     fi
 }
+

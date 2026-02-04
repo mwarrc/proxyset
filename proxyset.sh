@@ -93,7 +93,7 @@ show_help() {
     echo -e "${BOLD}${WHITE}ADMIN:${NC}"
     printf "  ${PURPLE}%-24s${NC} %s\n" "audit" "Review configuration history"
     printf "  ${PURPLE}%-24s${NC} %s\n" "install" "Install ProxySet globally"
-    printf "  ${PURPLE}%-24s${NC} %s\n" "update" "Update to latest version"
+    printf "  ${PURPLE}%-24s${NC} %s\n" "update [ver] [--no-proxy]" "Update to latest or specific version"
     printf "  ${PURPLE}%-24s${NC} %s\n" "list" "Show all loaded modules"
     echo ""
 
@@ -135,9 +135,20 @@ main() {
             ;;
         update)
             source "${LIB_DIR}/core/updater.sh"
-            update_proxyset
+            local version=""
+            local use_p=1
+            shift
+            while [[ $# -gt 0 ]]; do
+                case "$1" in
+                    --no-proxy) use_p=0 ;;
+                    *) version="$1" ;;
+                esac
+                shift
+            done
+            module_updater_run "$version" "$use_p"
             exit 0
             ;;
+
         gen-man)
              source "${LIB_DIR}/core/man_gen.sh"
              generate_man_page "proxyset.1"
