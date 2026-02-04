@@ -51,7 +51,7 @@ module_updater_run() {
     fi
 
     # Determine branch from version (defaulting to testing for Alpha 3.0)
-    local target_branch="${target_version:-testing}"
+    local target_branch="${target_version:-main}"
     local update_url="https://raw.githubusercontent.com/mwarrc/proxyset/${target_branch}/auto-install.sh"
     
     log "PROGRESS" "Fetching remote distribution from branch '$target_branch'..."
