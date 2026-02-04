@@ -312,9 +312,12 @@ main() {
                     log "WARN" "No modules loaded. Showing environment only."
                 fi
                 run_module_cmd "status" "" ""
+                echo ""
+                echo -e "${BOLD}${WHITE}Summary:${NC} ${#LOADED_MODULES[@]} modules loaded and checked."
             else
                 "module_${target}_status"
             fi
+
             
             # Always show env status as fallback
             echo "--- System Environment ---"

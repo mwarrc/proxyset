@@ -69,5 +69,17 @@ module_env_unset() {
 
 module_env_status() {
     echo "Environment Variables:"
-    env | grep -iE "(http_proxy|https_proxy|all_proxy|no_proxy)" || echo "  None set"
+    # Check live session
+    if env | grep -iE "(_proxy|PROXY)=" > /dev/null; then
+        env | grep -iE "(_proxy|PROXY)=" | sed 's/^/  [Live] /'
+    fi
+    
+    # Check persistent config
+    if [[ -f "$HOME/.bashrc" ]] && grep -q "# ProxySet Start" "$HOME/.bashrc"; then
+        echo "  [Persistent] Configured in ~/.bashrc"
+    fi
+    
+    if [[ -f "/etc/environment" ]] && grep -qiE "(_proxy|PROXY)=" "/etc/environment"; then
+        echo "  [Persistent] Configured in /etc/environment"
+    fi
 }
