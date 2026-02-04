@@ -290,6 +290,8 @@ main() {
                     log "WARN" "No modules loaded to unset."
                 fi
                 run_module_cmd "unset" "" ""
+                echo ""
+                echo -e "${BOLD}${WHITE}Summary:${NC} ${#LOADED_MODULES[@]} modules cleared successfully."
             else
                 "module_${target}_unset"
             fi
