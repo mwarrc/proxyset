@@ -1,0 +1,93 @@
+#!/bin/bash
+# ProxySet Core - Man Page Generator
+# Generates a basic man page from help text and module list.
+
+generate_man_page() {
+    local version="3.0.0"
+    local date=$(date "+%Y-%m-%d")
+    local output_file="$1"
+    
+    cat <<EOF > "$output_file"
+.TH PROXYSET 1 "$date" "ProxySet $version" "User Commands"
+.SH NAME
+proxyset \- Modular proxy configuration manager for Linux 
+.SH SYNOPSIS
+.B proxyset
+.RI [ TARGET ]
+.RI [ COMMAND ]
+.RI [ ARGUMENTS... ]
+.SH DESCRIPTION
+.B ProxySet
+is a comprehensive proxy configuration tool that manages proxy settings across system tools,
+package managers, development environments, and cloud CLIs. It uses a modular architecture
+to support a wide range of applications.
+.SH COMMANDS
+.TP
+.B wizard
+Launch the interactive setup wizard.
+.TP
+.B set <host> <port> [type] [user] [pass]
+Configure proxy settings for the specified target (or 'all').
+.TP
+.B unset
+Remove proxy configuration for the specified target.
+.TP
+.B status
+Show current proxy configuration status.
+.TP
+.B test [url]
+Test connectivity through the proxy.
+.TP
+.B diagnose
+Run deep diagnostics for network leaks.
+.TP
+.B discover
+Attempt to auto-discover proxy settings via WPAD/DNS.
+.TP
+.B install
+Install ProxySet globally to /usr/local/bin.
+.TP
+.B update
+Update ProxySet to the latest version.
+.SH MODULES
+The following modules are currently loaded:
+.TP
+.B Package Managers
+apt, dnf, yum, pamac, pacman, zypper, apk, xbps, brew, snap, flatpak, nix, swupd, emerge
+.TP
+.B Development
+git, npm, yarn, pip, cargo, go, gem, composer, maven, gradle, nuget
+.TP
+.B Containers
+docker, podman, containerd, buildah, kubernetes, helm
+.TP
+.B Cloud/Network
+aws, gcloud, az, terraform, conda, wget, curl, aria2, ytdlp
+.SH EXAMPLES
+.TP
+Set global HTTP proxy:
+.B proxyset set proxy.example.com 8080
+.TP
+Set proxy for only Docker:
+.B proxyset docker set proxy.example.com 8080
+.TP
+Run a command with proxy environment:
+.B proxyset run "curl google.com"
+.TP
+Restore a snapshot:
+.B proxyset snapshot restore pre_update
+.SH FILES
+.I ~/.local/share/proxyset
+.RS
+User data directory containing profiles, snapshots, and logs.
+.RE
+.I /etc/proxyset
+.RS
+System-wide configuration (if installed globally).
+.RE
+.SH AUTHOR
+Maintained by the ProxySet Community.
+EOF
+    
+    log "SUCCESS" "Man page generated at $output_file"
+}
