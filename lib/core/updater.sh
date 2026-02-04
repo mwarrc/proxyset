@@ -12,6 +12,8 @@ module_updater_run() {
         log "INFO" "Bypassing proxy for update process..."
         unset http_proxy https_proxy all_proxy no_proxy
         unset HTTP_PROXY HTTPS_PROXY ALL_PROXY NO_PROXY
+        # Securely tell git and curl to ignore their local config files
+        export GIT_CONFIG_PARAMETERS="'http.proxy=' 'https.proxy='"
     fi
     
     # 1. Determine installation mode
@@ -50,12 +52,18 @@ module_updater_run() {
         die "Dependencies missing: 'curl' is required for global updates."
     fi
 
-    # Determine branch from version (defaulting to testing for Alpha 3.0)
+    # Determine branch from version (defaulting to main for 3.0)
     local target_branch="${target_version:-main}"
     local update_url="https://raw.githubusercontent.com/mwarrc/proxyset/${target_branch}/auto-install.sh"
     
     log "PROGRESS" "Fetching remote distribution from branch '$target_branch'..."
-    if curl -sS "$update_url" | bash; then
+    
+    local curl_cmd=("curl" "-sS")
+    if [[ "$use_proxy" -eq 0 ]]; then
+        curl_cmd+=("-x" "") # This overrides ~/.curlrc and environment
+    fi
+
+    if "${curl_cmd[@]}" "$update_url" | bash; then
          log "SUCCESS" "Global update finalized. All modules synchronized."
     else
          die "Critical: Global re-installation failed for branch '$target_branch'."
