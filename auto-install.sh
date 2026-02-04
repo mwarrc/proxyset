@@ -14,8 +14,7 @@ echo -e "\033[2mTechnical notice: Intensive validation required across diverse e
 echo ""
 
 TEMP_DIR=$(mktemp -d)
-# Use testing branch for the alpha cycle as requested by development state
-git clone -b testing https://github.com/mwarrc/proxyset.git "$TEMP_DIR" > /dev/null 2>&1 || \
+git clone -b main https://github.com/mwarrc/proxyset.git "$TEMP_DIR" > /dev/null 2>&1 || \
 git clone https://github.com/mwarrc/proxyset.git "$TEMP_DIR" > /dev/null 2>&1
 
 cd "$TEMP_DIR"

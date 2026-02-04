@@ -68,7 +68,7 @@
 
 ### Remote Installation
 ```bash
-curl -sS https://raw.githubusercontent.com/mwarrc/proxyset/testing/auto-install.sh | bash
+curl -sS https://raw.githubusercontent.com/mwarrc/proxyset/main/auto-install.sh | bash
 ```
 
 ### Manual Installation
