@@ -9,7 +9,7 @@ success() { echo -e "\033[1;32m[v]\033[0m $1"; }
 error() { echo -e "\033[1;31m[x]\033[0m $1" >&2; exit 1; }
 
 log "Downloading ProxySet Core Distribution..."
-echo -e "\033[1;32mProxySet v0.1 - STABLE RELEASE\033[0m"
+echo -e "\033[1;32mProxySet v0.1\033[0m"
 echo -e "\033[2mTechnical notice:  As the tool is still in development, some features may not be stable.\033[0m"
 echo ""
 

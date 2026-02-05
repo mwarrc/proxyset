@@ -1,50 +1,102 @@
 # Contributing Modules to ProxySet
 
-Adding support for a new application is easy! Each module is a standalone Bash script located in `lib/modules/`.
+Adding support for a new application is streamlined and modular. Each module is a standalone Bash script located in `lib/modules/`.
 
-## Module Template
+## Module Core Architecture
 
-Create a file named `your-app.sh` in `lib/modules/`:
+A module interacts with the ProxySet engine via three mandatory functions. Create a file named `your-app.sh` in `lib/modules/` and implement the following:
 
 ```bash
 #!/bin/bash
-# ProxySet Module - Your App Name
+# ProxySet Module - [Application Name]
 
-# This function is called when 'proxyset set' is run
+# 1. SET: Called when 'proxyset set' is run
+# Arguments:
+#   $1: Fully formatted proxy URL (e.g., http://user:pass@127.0.0.1:8080)
+#   $2: No-proxy list (e.g., localhost,127.0.0.1)
 module_your-app_set() {
     local proxy_url="$1"
     local no_proxy="$2"
     
-    # Add logic here to set proxy for your app
-    # Example:
-    # app-cli config set proxy "$proxy_url"
+    log "INFO" "Configuring [App] proxy..."
+    
+    # Implementation Logic: 
+    # Usually editing a ~/.config file or running a CLI command
+    # Examples:
+    #   git config --global http.proxy "$proxy_url"
+    #   sed -i "s|proxy=.*|proxy=$proxy_url|" ~/.myapprc
 }
 
-# This function is called when 'proxyset unset' is run
+# 2. UNSET: Called when 'proxyset unset' is run
 module_your-app_unset() {
-    # Add logic here to remove proxy settings
+    log "INFO" "Removing [App] proxy settings..."
+    
+    # Implementation Logic:
+    #   git config --global --unset http.proxy
 }
 
-# This function is called when 'proxyset status' is run
+# 3. STATUS: Called when 'proxyset status' is run
 module_your-app_status() {
-    echo "Your App Status:"
-    # Show current config
+    # Check if config exists and print it
+    local current_proxy=$(your-app-cli config get proxy 2>/dev/null)
+    
+    if [[ -n "$current_proxy" ]]; then
+        echo "[App] Proxy: $current_proxy"
+    else
+        echo "[App] Proxy: Not set"
+    fi
 }
 ```
 
-## Naming Convention
+## Mandatory Guidelines
 
-- The file must end in `.sh`.
-- Function names must follow the pattern: `module_<filename_without_extension>_<command>`.
-- Replace `<filename_without_extension>` with your module's name (e.g., `git`, `npm`, `apt`).
-- Replace `<command>` with `set`, `unset`, or `status`.
+### 1. Naming Conventions
+- **Filename**: Must be lowercase, alphanumeric, and end in `.sh` (e.g., `docker.sh`).
+- **Function Names**: Must strictly follow `module_<filename>_<command>`.
+- **Global Variables**: Use local variables (`local var="..."`) inside functions to avoid polluting the global namespace.
 
-## Helper Functions
+### 2. Security Patterns
+- **User Home**: Always use `$HOME` instead of hardcoding `/home/user`.
+- **Privileges**: Use `run_sudo` if a command requires root, but avoid it if the config is in the user's home.
+- **Pathing**: Use `command_exists "cmd"` before calling external binaries to prevent errors on systems where the app isn't installed.
 
-You can use core helper functions in your modules:
-- `log "INFO|WARN|ERROR|SUCCESS|DEBUG" "message"`: Log a message.
-- `command_exists "cmd"`: Check if a command is available.
-- `check_sudo`: Check if sudo privileges are available.
-- `is_wsl`: Check if running inside WSL.
-- `get_wsl_host_ip`: Get the host IP from inside WSL.
+### 3. Core Helper Library
+ProxySet provides a rich set of built-in utilities for module developers:
+
+| Helper | Description |
+| :--- | :--- |
+| `log "LEVEL" "msg"` | Standardized logging. Levels: `INFO`, `WARN`, `ERROR`, `SUCCESS`, `PROGRESS`. |
+| `command_exists "cmd"`| Returns 0 if the command exists in PATH. |
+| `run_sudo <cmd>` | Runs command as root (fails gracefully if sudo is unavailable). |
+| `check_sudo` | Returns 0 if current user has sudo/root access. |
+| `is_wsl` | Returns 0 if running under Windows Subsystem for Linux. |
+| `get_wsl_host_ip` | Retrieves the IP of the Windows host from within WSL. |
+| `parse_proxy_url "$url"`| Returns `proto\|user\|pass\|host\|port`. |
+| `url_encode "$str"` | Safely encodes characters for URL strings. |
+| `shell_escape "$str"` | Escapes dangerous characters for use in raw shell commands. |
+
+## Practical Example: Git Module
+```bash
+module_git_set() {
+    local url="$1"
+    git config --global http.proxy "$url"
+    git config --global https.proxy "$url"
+}
+
+module_git_unset() {
+    git config --global --unset http.proxy
+    git config --global --unset https.proxy
+}
+
+module_git_status() {
+    echo "Git Proxy:"
+    printf "  http: %s\n" "$(git config --global http.proxy || echo 'Not set')"
+}
 ```
+
+## Testing Your Module
+Once your script is in `lib/modules/`, ProxySet automatically detects it. You can test it immediately:
+1. `bash proxyset.sh list` (Check if it appears in the list)
+2. `bash proxyset.sh your-app status`
+3. `bash proxyset.sh your-app set 127.0.0.1 8080`
+4. `bash proxyset.sh tests/run_tests.sh` (Validates syntax and interface of all modules)

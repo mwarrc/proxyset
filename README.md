@@ -31,6 +31,13 @@ Standard procedure for local deployment from source.
     sudo ./proxyset.sh install
 ```
 
+### For Package Maintainers
+ProxySet supports standard `make` conventions for system packaging (Arch, Fedora, Debian).
+```bash
+    make
+    sudo make install PREFIX=/usr
+```
+
 ---
 
 > [!WARNING]
