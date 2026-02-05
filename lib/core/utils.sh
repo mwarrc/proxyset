@@ -35,13 +35,37 @@ check_sudo() {
     return 1
 }
 
-validate_port() {
-    [[ "$1" =~ ^[0-9]+$ ]] && [[ "$1" -ge 1 ]] && [[ "$1" -le 65535 ]]
-}
-
-validate_proxy_type() {
-    local type="$1"
-    [[ "$type" == "http" || "$type" == "https" || "$type" == "socks4" || "$type" == "socks5" ]]
+# Safe source function to prevent sourcing untrusted files
+safe_source() {
+    local file="$1"
+    [[ ! -f "$file" ]] && return 1
+    
+    # If not root, just check if we own it or it's root-owned
+    # If root, must be root-owned and NOT world-writable
+    local owner_uid
+    owner_uid=$(ls -ldn "$file" | awk '{print $3}')
+    
+    if [[ $EUID -eq 0 ]]; then
+        if [[ "$owner_uid" -ne 0 ]]; then
+            log "WARN" "Security: Skipping config file not owned by root: $file"
+            return 1
+        fi
+        
+        # Check permissions (not world-writable)
+        local perms
+        perms=$(ls -ld "$file" | awk '{print $1}')
+        if [[ "${perms:8:1}" == "w" ]]; then
+            log "WARN" "Security: Skipping world-writable config file: $file"
+            return 1
+        fi
+    else
+        if [[ "$owner_uid" -ne 0 && "$owner_uid" -ne "$EUID" ]]; then
+            log "WARN" "Security: Skipping config file not owned by you or root: $file"
+            return 1
+        fi
+    fi
+    
+    source "$file"
 }
 
 is_wsl() {

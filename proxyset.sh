@@ -47,11 +47,17 @@ init_profiles
 load_modules "$MODULES_DIR"
 
 show_banner() {
-    echo -e "${BOLD}${CYAN}"
-    echo "  ╔═══════════════════════════════════════════════╗"
-    echo "  ║      PROXYSET v3.0 - ALPHA RELEASE      ║"
-    echo "  ╚═══════════════════════════════════════════════╝"
-    echo -e "${NC}"
+    echo -e "${CYAN}${BOLD}"
+    cat << "EOF"
+    ____                       _____      __ 
+   / __ \_________  _  ____  _/ ___/___  / /_
+  / /_/ / ___/ __ \| |/_/ / / \__ \/ _ \/ __/
+ / ____/ /  / /_/ />  </ /_/ /___/ /  __/ /_  
+/_/   /_/   \____/_/|_|\__, /____/\___/\__/  
+                      /____/                 
+EOF
+    echo -e "${NC}${DIM}  v3.0.0-alpha${NC}"
+    echo ""
 }
 
 show_help() {
@@ -92,12 +98,15 @@ show_help() {
 
     echo -e "${BOLD}${WHITE}ADMIN:${NC}"
     printf "  ${PURPLE}%-24s${NC} %s\n" "audit" "Review configuration history"
+    printf "  ${PURPLE}%-24s${NC} %s\n" "discover" "Auto-detect existing proxy configs"
     printf "  ${PURPLE}%-24s${NC} %s\n" "install" "Install ProxySet globally"
+    printf "  ${PURPLE}%-24s${NC} %s\n" "uninstall" "Remove ProxySet from the system"
     printf "  ${PURPLE}%-24s${NC} %s\n" "update [ver] [--no-proxy]" "Update to latest or specific version"
     printf "  ${PURPLE}%-24s${NC} %s\n" "list" "Show all loaded modules"
+    printf "  ${PURPLE}%-24s${NC} %s\n" "gen-man" "Generate manual page"
     echo ""
 
-    echo -e "${DIM}Modules (${#LOADED_MODULES[@]}): ${!LOADED_MODULES[*]}${NC}"
+    echo -e "${DIM}Available modules: ${#LOADED_MODULES[@]} (Run 'proxyset list' to see all)${NC}"
 }
 
 main() {
@@ -128,7 +137,7 @@ main() {
             module_installer_run "install"
             exit 0
             ;;
-        uninstall)
+        uninstall|unistall)
             source "${LIB_DIR}/core/installer.sh"
             module_installer_run "uninstall"
             exit 0
@@ -146,6 +155,16 @@ main() {
                 shift
             done
             module_updater_run "$version" "$use_p"
+            exit 0
+            ;;
+
+        pac)
+            shift
+            case "${1:-status}" in
+                set) "module_pac_set" "${2:-}"; log_audit "pac_set" "all" "${2:-}" ;;
+                unset) "module_pac_unset"; log_audit "pac_unset" "all" "cleared" ;;
+                *) "module_pac_status" ;;
+            esac
             exit 0
             ;;
 
@@ -175,7 +194,7 @@ main() {
             local p_url="${http_proxy:-}"
             local n_proxy="${no_proxy:-}"
             if [[ -z "$p_url" && -f "$HOME/.config/proxyset/profiles/default.conf" ]]; then
-                source "$HOME/.config/proxyset/profiles/default.conf"
+                safe_source "$HOME/.config/proxyset/profiles/default.conf"
                 p_url="$proxy_url"
                 n_proxy="$no_proxy"
             fi
@@ -198,11 +217,20 @@ main() {
                     local type="${4:-http}"
                     local user="${5:-}"
                     local pass="${6:-}"
-                    if [[ -z "$name" || -z "$host" || -z "$port" ]]; then die "Name, host, and port required."; fi
+                    
+                    if [[ -z "$name" || -z "$host" || -z "$port" ]]; then 
+                        die "Name, host, and port required."
+                    fi
+                    
+                    # Use build_proxy_url to ensure validation and proper encoding
                     local url
-                    [[ -n "$user" && -n "$pass" ]] && url="${type}://${user}:${pass}@${host}:${port}" || url="${type}://${host}:${port}"
+                    url=$(build_proxy_url "$host" "$port" "$type" "$user" "$pass")
+                    if [[ -z "$url" ]]; then
+                        exit 1 # build_proxy_url already prints error to stderr
+                    fi
+                    
                     save_profile "$name" "$url" "localhost,127.0.0.1,::1"
-                    log_audit "profile_save" "$name" "$url"
+                    log_audit "profile_save" "$name" "$(sanitize_for_log "$url")"
                     ;;
                 load) 
                     load_profile "${2:-}"
@@ -238,9 +266,8 @@ main() {
             command="$target"
             target="all"
          else
-            # Invalid command for the module
-            show_help
-            exit 1
+            # Default to status if only a module name was provided
+            command="status"
          fi
     fi
     
@@ -261,7 +288,7 @@ main() {
             
             # Validate all inputs before proceeding
             if ! validate_proxy_params "$host" "$port" "$type" "$user" "$pass"; then
-                die "$VALIDATION_ERROR"
+                exit 1
             fi
             
             # Build validated proxy URL
@@ -279,7 +306,12 @@ main() {
                 log "INFO" "Verifying connectivity after configuration..."
                 check_connectivity "http://google.com"
             else
-                "module_${target}_set" "$proxy_url" "$no_proxy"
+                local func="module_${target}_set"
+                if declare -f "$func" >/dev/null; then
+                    "$func" "$proxy_url" "$no_proxy"
+                else
+                    die "Module '$target' does not support 'set' command."
+                fi
             fi
             log_audit "set" "$target" "$(sanitize_for_log "$proxy_url")"
             log "SUCCESS" "Proxy set for [$target]."
@@ -293,21 +325,17 @@ main() {
                 echo ""
                 echo -e "${BOLD}${WHITE}Summary:${NC} ${#LOADED_MODULES[@]} modules cleared successfully."
             else
-                "module_${target}_unset"
+                local func="module_${target}_unset"
+                if declare -f "$func" >/dev/null; then
+                    "$func"
+                else
+                    die "Module '$target' does not support 'unset' command."
+                fi
             fi
             log_audit "unset" "$target" "cleared"
             log "SUCCESS" "Proxy unset for [$target]."
             ;;
 
-        pac)
-            shift
-            case "$1" in
-                set) "module_pac_set" "$2"; log_audit "pac_set" "all" "$2" ;;
-                unset) "module_pac_unset"; log_audit "pac_unset" "all" "cleared" ;;
-                *) "module_pac_status" ;;
-            esac
-            exit 0
-            ;;
         status)
             if [[ "$target" == "all" ]]; then
                 if [[ ${#LOADED_MODULES[@]} -eq 0 ]]; then
@@ -317,7 +345,12 @@ main() {
                 echo ""
                 echo -e "${BOLD}${WHITE}Summary:${NC} ${#LOADED_MODULES[@]} modules loaded and checked."
             else
-                "module_${target}_status"
+                local func="module_${target}_status"
+                if declare -f "$func" >/dev/null; then
+                    "$func"
+                else
+                    die "Module '$target' does not support 'status' command."
+                fi
             fi
 
             
@@ -327,10 +360,15 @@ main() {
             ;;
 
         list)
-            echo "Loaded Modules:"
-            for module in "${!LOADED_MODULES[@]}"; do
-                echo "  - $module"
-            done
+            echo -e "${BOLD}${CYAN}Loaded Modules (${#LOADED_MODULES[@]}):${NC}"
+            if command -v column >/dev/null 2>&1; then
+                printf "%s\n" "${!LOADED_MODULES[@]}" | sort | column -c $(tput cols 2>/dev/null || echo 80) | sed 's/^/  /'
+            else
+                # Fallback if column is not available
+                for module in "${!LOADED_MODULES[@]}"; do
+                    echo "  - $module"
+                done | sort
+            fi
             ;;
         *)
             show_help

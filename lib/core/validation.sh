@@ -258,9 +258,9 @@ sanitize_for_log() {
 # Composite Validation with Error Messages
 # ----------------------------------------------------------------------------
 
-# Validate all proxy parameters and set error message
+# Validate all proxy parameters
 # Usage: validate_proxy_params host port [type] [user] [pass]
-# Returns: 0 if valid, 1 if invalid (sets VALIDATION_ERROR)
+# Returns: 0 if valid, 1 if invalid (prints error to stderr)
 validate_proxy_params() {
     local host="$1"
     local port="$2"
@@ -268,40 +268,38 @@ validate_proxy_params() {
     local user="${4:-}"
     local pass="${5:-}"
     
-    VALIDATION_ERROR=""
-    
     if [[ -z "$host" ]]; then
-        VALIDATION_ERROR="Host is required"
+        echo "Validation Error: Host is required" >&2
         return 1
     fi
     
     if ! validate_host "$host"; then
-        VALIDATION_ERROR="Invalid host format: $host"
+        echo "Validation Error: Invalid host format: $host" >&2
         return 1
     fi
     
     if [[ -z "$port" ]]; then
-        VALIDATION_ERROR="Port is required"
+        echo "Validation Error: Port is required" >&2
         return 1
     fi
     
     if ! validate_port "$port"; then
-        VALIDATION_ERROR="Invalid port: $port (must be 1-65535)"
+        echo "Validation Error: Invalid port: $port (must be 1-65535)" >&2
         return 1
     fi
     
     if ! validate_proxy_type "$type"; then
-        VALIDATION_ERROR="Invalid proxy type: $type (allowed: ${VALID_PROXY_TYPES[*]})"
+        echo "Validation Error: Invalid proxy type: $type (allowed: ${VALID_PROXY_TYPES[*]})" >&2
         return 1
     fi
     
     if [[ -n "$user" ]] && ! validate_username "$user"; then
-        VALIDATION_ERROR="Invalid username format (only alphanumeric, _, -, ., @ allowed)"
+        echo "Validation Error: Invalid username format (only alphanumeric, _, -, ., @ allowed)" >&2
         return 1
     fi
     
     if [[ -n "$pass" ]] && ! validate_password "$pass"; then
-        VALIDATION_ERROR="Invalid password (contains forbidden characters)"
+        echo "Validation Error: Invalid password (contains forbidden characters)" >&2
         return 1
     fi
     

@@ -14,23 +14,24 @@ module_installer_run() {
     local install_path="/usr/local/bin/proxyset"
     local config_path="/usr/local/lib/proxyset"
     
-    if ! check_sudo; then
-        die "Sudo privileges are required to install ProxySet globally."
+    # Ensure current dir has what we need
+    if [[ ! -f proxyset.sh || ! -d lib ]]; then
+        die "Installer must be run from the root of the ProxySet repository."
     fi
-    
+
     log "PROGRESS" "Creating system directories..."
-    sudo mkdir -p "$config_path/lib/core"
-    sudo mkdir -p "$config_path/lib/modules"
-    sudo mkdir -p "$config_path/completions"
+    run_sudo mkdir -p "$config_path/lib/core"
+    run_sudo mkdir -p "$config_path/lib/modules"
+    run_sudo mkdir -p "$config_path/completions"
     
     log "PROGRESS" "Copying files to $config_path..."
-    sudo cp -r lib/core/* "$config_path/lib/core/"
-    sudo cp -r lib/modules/* "$config_path/lib/modules/"
-    [[ -d completions ]] && sudo cp -r completions/* "$config_path/completions/"
+    run_sudo cp -r lib/core/* "$config_path/lib/core/"
+    run_sudo cp -r lib/modules/* "$config_path/lib/modules/"
+    [[ -d completions ]] && run_sudo cp -r completions/* "$config_path/completions/"
     
     log "PROGRESS" "Creating global executable at $install_path..."
     # Create a wrapper script or copy the main one with adjusted paths
-    cat <<EOF | sudo tee "$install_path" > /dev/null
+    cat <<EOF | run_sudo tee "$install_path" > /dev/null
 #!/bin/bash
 # ProxySet Global Wrapper
 export PROXYSET_ROOT="$config_path"
@@ -38,14 +39,14 @@ bash "\$PROXYSET_ROOT/proxyset.sh" "\$@"
 EOF
 
     # Copy the main script to the config path as well
-    sudo cp proxyset.sh "$config_path/proxyset.sh"
+    run_sudo cp proxyset.sh "$config_path/proxyset.sh"
     
-    sudo chmod +x "$install_path"
-    sudo chmod +x "$config_path/proxyset.sh"
+    run_sudo chmod +x "$install_path"
+    run_sudo chmod +x "$config_path/proxyset.sh"
     
     # Install completions
     if [[ -d "/usr/share/bash-completion/completions" ]]; then
-        sudo cp completions/proxyset.bash "/usr/share/bash-completion/completions/proxyset"
+        run_sudo cp completions/proxyset.bash "/usr/share/bash-completion/completions/proxyset"
         log "PROGRESS" "Installed bash completions."
     fi
     
@@ -54,11 +55,10 @@ EOF
 
 _installer_uninstall() {
     log "INFO" "Uninstalling ProxySet..."
-    if ! check_sudo; then die "Sudo required."; fi
     
-    sudo rm -f "/usr/local/bin/proxyset"
-    sudo rm -rf "/usr/local/lib/proxyset"
-    sudo rm -f "/usr/share/bash-completion/completions/proxyset"
+    run_sudo rm -f "/usr/local/bin/proxyset"
+    run_sudo rm -rf "/usr/local/lib/proxyset"
+    run_sudo rm -f "/usr/share/bash-completion/completions/proxyset"
     
     log "SUCCESS" "ProxySet uninstalled."
 }

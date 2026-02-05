@@ -12,8 +12,8 @@ module_updater_run() {
         log "INFO" "Bypassing proxy for update process..."
         unset http_proxy https_proxy all_proxy no_proxy
         unset HTTP_PROXY HTTPS_PROXY ALL_PROXY NO_PROXY
-        # Securely tell git and curl to ignore their local config files
-        export GIT_CONFIG_PARAMETERS="'http.proxy=' 'https.proxy='"
+        # Tell git and curl to ignore their local config files
+        export GIT_CONFIG_PARAMETERS="http.proxy= https.proxy="
     fi
     
     # 1. Determine installation mode

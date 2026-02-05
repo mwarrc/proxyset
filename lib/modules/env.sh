@@ -27,10 +27,12 @@ module_env_set() {
         export ALL_PROXY="$proxy_url"
     fi
 
-    # Persistent - User (.bashrc)
-    if [[ -f "$HOME/.bashrc" ]]; then
-        sed -i '/# ProxySet Start/,/# ProxySet End/d' "$HOME/.bashrc"
-        cat >> "$HOME/.bashrc" <<EOF
+    # Persistent - User (.bashrc, .zshrc)
+    local user_rcs=("$HOME/.bashrc" "$HOME/.zshrc")
+    for rc in "${user_rcs[@]}"; do
+        if [[ -f "$rc" ]]; then
+            sed -i '/# ProxySet Start/,/# ProxySet End/d' "$rc"
+            cat >> "$rc" <<EOF
 # ProxySet Start
 export http_proxy="$proxy_url"
 export https_proxy="$proxy_url"
@@ -42,7 +44,8 @@ export ALL_PROXY="$proxy_url"
 export NO_PROXY="$no_proxy"
 # ProxySet End
 EOF
-    fi
+        fi
+    done
 
     # Persistent - System (/etc/environment)
     if check_sudo; then
@@ -58,9 +61,12 @@ module_env_unset() {
     unset http_proxy https_proxy ftp_proxy all_proxy no_proxy
     unset HTTP_PROXY HTTPS_PROXY FTP_PROXY ALL_PROXY NO_PROXY
 
-    if [[ -f "$HOME/.bashrc" ]]; then
-        sed -i '/# ProxySet Start/,/# ProxySet End/d' "$HOME/.bashrc"
-    fi
+    local user_rcs=("$HOME/.bashrc" "$HOME/.zshrc")
+    for rc in "${user_rcs[@]}"; do
+        if [[ -f "$rc" ]]; then
+            sed -i '/# ProxySet Start/,/# ProxySet End/d' "$rc"
+        fi
+    done
 
     if check_sudo; then
         sudo sed -i '/http_proxy=/d;/https_proxy=/d;/all_proxy=/d;/no_proxy=/d;/HTTP_PROXY=/d;/HTTPS_PROXY=/d;/ALL_PROXY=/d;/NO_PROXY=/d' /etc/environment

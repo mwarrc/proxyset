@@ -47,14 +47,12 @@ load_profile() {
     fi
 
     if [[ -n "$file" && -f "$file" ]]; then
-        # Use a subshell to avoid polluting current shell if sourced multiple times
-        # and validate content
-        if grep -q "proxy_url=" "$file"; then
-            source "$file"
+        # Use safe_source to validate ownership/permissions before sourcing
+        if safe_source "$file"; then
             run_module_cmd "set" "$proxy_url" "$no_proxy"
             log "SUCCESS" "Profile '$name' loaded and applied."
         else
-            die "Corrupted profile file: $name"
+            die "Failed to load or validate profile file: $name"
         fi
         
         # Cleanup temp file if it was decrypted

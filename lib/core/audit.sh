@@ -37,11 +37,12 @@ log_audit() {
     mkdir -p "$(dirname "$AUDIT_LOG")"
     
     # Construct core payload
-    # Note: We manually construct JSON to avoid jq dependency requirement
-    # but we must be careful about escaping user inputs.
-    # We assume 'details' is already sanitized by sanitize_for_log in proxyset.sh
+    # Note: We manually construct JSON and must escape double quotes in user-provided fields.
+    local e_action="${action//\"/\\\"}"
+    local e_target="${target//\"/\\\"}"
+    local e_details="${details//\"/\\\"}"
     
-    local payload="\"timestamp\": \"$timestamp\", \"user\": \"$user\", \"action\": \"$action\", \"target\": \"$target\", \"details\": \"$details\""
+    local payload="\"timestamp\": \"$timestamp\", \"user\": \"$user\", \"action\": \"$e_action\", \"target\": \"$e_target\", \"details\": \"$e_details\""
     
     # 1.15 Calculate SHA256 Checksum of the payload
     # We use basic tools (sha256sum or shasum)
@@ -90,17 +91,17 @@ verify_audit() {
     log "INFO" "Verifying audit log integrity..."
     
     while IFS= read -r line; do
+        [[ -z "$line" ]] && continue
         ((line_num++))
-        # crude extraction since we can't rely on jq
-        local stored_checksum
-        stored_checksum=$(echo "$line" | grep -o '"checksum": "[^"]*"' | cut -d'"' -f4)
         
-        # reconstruct payload to verify
-        # Remove checksum and signature fields specifically from the end
-        # This is brittle without a parser, ensuring write format matches strictly
+        # Extract checksum (last field before signature or at end)
+        local stored_checksum
+        stored_checksum=$(echo "$line" | sed -E 's/.*"checksum": "([^"]*)".*/\1/')
+        
+        # Reconstruct payload to verify
+        # Everything before the checksum field
         local payload_raw
-        payload_raw=$(echo "$line" | sed 's/, "checksum":.*//')
-        # Re-add closing brace removed by sed if strictly formatted
+        payload_raw=$(echo "$line" | sed -E 's/, "checksum":.*//')
         if [[ "$payload_raw" != *"}" ]]; then payload_raw="${payload_raw}}"; fi
         
         # Recalculate
@@ -112,7 +113,7 @@ verify_audit() {
         fi
         
         if [[ "$stored_checksum" != "null" && "$stored_checksum" != "$calc_checksum" ]]; then
-            log "ERROR" "Integrity failure at line $line_num"
+            log "ERROR" "Integrity failure at line $line_num (Stored: ${stored_checksum:0:8}, Calc: ${calc_checksum:0:8})"
             ((failures++))
         fi
     done < "$AUDIT_LOG"
