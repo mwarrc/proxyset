@@ -1,14 +1,4 @@
-#!/bin/bash
-# ProxySet Core - Man Page Generator
-# Generates a basic man page from help text and module list.
-
-generate_man_page() {
-    local version="0.1"
-    local date=$(date "+%Y-%m-%d")
-    local output_file="$1"
-    
-    cat <<EOF > "$output_file"
-.TH PROXYSET 1 "$date" "ProxySet $version" "User Commands"
+.TH PROXYSET 1 "2026-02-05" "ProxySet 0.1" "User Commands"
 .SH NAME
 proxyset \- Modular proxy configuration manager for Linux 
 .SH SYNOPSIS
@@ -87,7 +77,3 @@ System-wide configuration (if installed globally).
 .RE
 .SH AUTHOR
 Maintained by the ProxySet Community.
-EOF
-    
-    log "SUCCESS" "Man page generated at $output_file"
-}

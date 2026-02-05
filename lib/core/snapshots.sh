@@ -39,7 +39,7 @@ take_snapshot() {
     "created": "$(date -Iseconds)",
     "user": "$(whoami)",
     "hostname": "$(hostname)",
-    "proxyset_version": "3.0.0-alpha"
+    "proxyset_version": "0.1"
 }
 EOF
     

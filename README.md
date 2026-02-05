@@ -1,7 +1,7 @@
 <div align="center">
 
 # ProxySet
-**Version 3.0.0-Alpha**
+**Version 0.1** (Early Development)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-black.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![Bash](https://img.shields.io/badge/Language-Bash-black.svg?style=flat-square)](https://www.gnu.org/software/bash/)
@@ -16,27 +16,27 @@
 ### Remote Installation
 Deploy the latest global distribution using the automated installer.
 ```bash
-curl -sS https://raw.githubusercontent.com/mwarrc/proxyset/main/auto-install.sh | bash
+    curl -sS https://raw.githubusercontent.com/mwarrc/proxyset/main/auto-install.sh | bash
 ```
 
 ### Manual Installation
 Standard procedure for local deployment from source.
 ```bash
-# Clone the repository
-git clone https://github.com/mwarrc/proxyset.git
-cd proxyset
+    # Clone the repository
+    git clone https://github.com/mwarrc/proxyset.git
+    cd proxyset
 
-# Set permissions and execute global installation
-sudo chmod +x proxyset.sh
-sudo ./proxyset.sh install
+    # Set permissions and execute global installation
+    sudo chmod +x proxyset.sh
+    sudo ./proxyset.sh install
 ```
 
 ---
 
-> [!CAUTION]
-> **OPERATIONAL NOTICE: ALPHA PHASE**
+> [!WARNING]
+> **DEVELOPMENT NOTICE**
 >
-> ProxySet 3.0 is currently in a high-intensity development and validation cycle. While cross-distribution support is broadly implemented, environmental edge cases may exist.
+> ProxySet is currently in early development. While most modules are functional across many distributions, it is not yet considered stable. Some features may break or behave unexpectedly depending on your specific system environment.
 >
 > **Security & Validation Protocols**
 > * **Sandbox Validation**: Testing in isolated environments is mandatory prior to production use.

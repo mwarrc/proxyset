@@ -49,6 +49,27 @@ EOF
         run_sudo cp completions/proxyset.bash "/usr/share/bash-completion/completions/proxyset"
         log "PROGRESS" "Installed bash completions."
     fi
+
+    # Install Manual Page
+    local man_path="/usr/local/share/man/man1"
+    run_sudo mkdir -p "$man_path"
+    
+    # If proxyset.1 doesn't exist, try to generate it
+    if [[ ! -f proxyset.1 ]]; then
+        source "$CORE_DIR/man_gen.sh" 2>/dev/null
+        if declare -f generate_man_page >/dev/null; then
+            generate_man_page "proxyset.1"
+        fi
+    fi
+
+    if [[ -f proxyset.1 ]]; then
+        run_sudo cp proxyset.1 "$man_path/proxyset.1"
+        log "PROGRESS" "Installed manual page."
+        # Update mandb if available
+        if command_exists mandb; then
+            run_sudo mandb > /dev/null 2>&1 || true
+        fi
+    fi
     
     log "SUCCESS" "ProxySet installed successfully! You can now run 'proxyset' from anywhere."
 }
@@ -59,6 +80,11 @@ _installer_uninstall() {
     run_sudo rm -f "/usr/local/bin/proxyset"
     run_sudo rm -rf "/usr/local/lib/proxyset"
     run_sudo rm -f "/usr/share/bash-completion/completions/proxyset"
+    run_sudo rm -f "/usr/local/share/man/man1/proxyset.1"
+    
+    if command_exists mandb; then
+        run_sudo mandb > /dev/null 2>&1 || true
+    fi
     
     log "SUCCESS" "ProxySet uninstalled."
 }

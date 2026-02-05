@@ -1,6 +1,6 @@
 #!/bin/bash
 # ProxySet Auto-Installer Script
-# Usage: curl -sS https://raw.githubusercontent.com/mwarrc/proxyset/main/auto-install.sh | bash
+# Usage: curl -sS https://raw.githubusercontent.com/mwarrc/proxyset/----branch-----/auto-install.sh | bash
 
 set -euo pipefail
 
@@ -9,8 +9,8 @@ success() { echo -e "\033[1;32m[v]\033[0m $1"; }
 error() { echo -e "\033[1;31m[x]\033[0m $1" >&2; exit 1; }
 
 log "Downloading ProxySet Core Distribution..."
-echo -e "\033[1;31m[ALPHA] ProxySet v3.0 - ALPHA PHASE\033[0m"
-echo -e "\033[2mTechnical notice: Intensive validation required across diverse environments.\033[0m"
+echo -e "\033[1;32mProxySet v0.1 - STABLE RELEASE\033[0m"
+echo -e "\033[2mTechnical notice:  As the tool is still in development, some features may not be stable.\033[0m"
 echo ""
 
 TEMP_DIR=$(mktemp -d)

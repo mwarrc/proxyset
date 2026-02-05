@@ -1,6 +1,6 @@
 #!/bin/bash
 # ProxySet - Modular Proxy Configuration Tool
-# Version: 3.0.0-alpha
+# Version: 0.1
 # Author: mwarrc
 
 # Default settings
@@ -56,7 +56,7 @@ show_banner() {
 /_/   /_/   \____/_/|_|\__, /____/\___/\__/  
                       /____/                 
 EOF
-    echo -e "${NC}${DIM}  v3.0.0-alpha${NC}"
+    echo -e "${NC}${DIM}  v0.1${NC}"
     echo ""
 }
 

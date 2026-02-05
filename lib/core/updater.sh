@@ -52,7 +52,7 @@ module_updater_run() {
         die "Dependencies missing: 'curl' is required for global updates."
     fi
 
-    # Determine branch from version (defaulting to main for 3.0)
+    # Determine branch from version (defaulting to main for 0.1)
     local target_branch="${target_version:-main}"
     local update_url="https://raw.githubusercontent.com/mwarrc/proxyset/${target_branch}/auto-install.sh"
     
